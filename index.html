@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A - Coding Puzzle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Playfair+Display:ital,wght@1,700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E1117;
+  --surface: #1A1F2E;
+  --card: #252D3D;
+  --card2: #2E384D;
+  --pink: #FF3D87;
+  --cyan: #00D4FF;
+  --gold: #FFB020;
+  --green: #00E676;
+  --red: #FF4444;
+  --text: #E8EDF5;
+  --muted: #7A8499;
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.18);
+  --blk-fwd: #FF3D87;
+  --blk-turn: #7C3AED;
+  --blk-jump: #00C896;
+  --blk-destroy: #FF6B35;
+  --cs: 50px;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Space Grotesk',system-ui,sans-serif}
+html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden}
+.hidden{display:none!important}
+.global-bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;background:var(--bg)}
+.global-bg span{position:absolute;width:2px;height:2px;background:var(--cyan);border-radius:50%;animation:twinkle var(--d,3s) var(--delay,0s) infinite}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;background:transparent}
+#menu-screen{flex-direction:column;gap:0}
+.logo-area{position:relative;text-align:center;margin-bottom:40px;z-index:10}
+.elegant-a{font-family:'Playfair Display',serif;font-size:clamp(6rem,15vw,10rem);font-style:italic;background:linear-gradient(45deg,var(--pink),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;filter:drop-shadow(0 0 20px rgba(255,61,135,0.4));margin-bottom:5px}
+.logo-sub{font-size:1rem;color:var(--muted);letter-spacing:4px;text-transform:uppercase;margin-top:8px}
+.logo-badge{display:inline-block;background:var(--pink);color:#fff;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:2px;margin-top:12px}
+.menu-card, .form-card, .howto-card, .lb-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:12px;z-index:10;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.menu-card{width:320px} .form-card{width:400px;text-align:center} .howto-card, .lb-card{width:500px;max-height:90vh;overflow-y:auto}
+.form-card h2, .howto-card h2, .lb-card h2{font-size:1.5rem;margin-bottom:12px;color:var(--text);text-align:center}
+.form-card p{color:var(--muted);margin-bottom:24px;font-size:0.95rem}
+.menu-btn{display:flex;align-items:center;gap:12px;padding:14px 20px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-size:1rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:left;width:100%}
+.menu-btn:hover{border-color:var(--pink);background:var(--card2);transform:translateX(4px)}
+.menu-btn.primary{background:var(--pink);border-color:var(--pink);color:#fff}
+.menu-btn.primary:hover{background:#e0356f;transform:translateX(4px) scale(1.01)}
+.menu-btn .icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.name-input{width:100%;background:var(--card);border:1px solid var(--border-bright);border-radius:12px;padding:14px 18px;font-size:1.1rem;color:var(--text);outline:none;text-align:center;transition:border-color .2s;margin-bottom:16px}
+.name-input:focus{border-color:var(--pink)}
+.btn{padding:13px 24px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.95rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn:hover{border-color:var(--border-bright);background:var(--card2)}
+.btn.primary{background:var(--pink);border-color:var(--pink);color:#fff} .btn.primary:hover{background:#e0356f}
+.lb-row{display:grid;grid-template-columns:40px 1fr 80px 60px;gap:8px;align-items:center;padding:12px 16px;border-radius:10px;margin-bottom:6px;font-size:0.9rem;background:var(--card)}
+.lb-row.header{background:none;color:var(--muted);font-size:0.8rem;font-weight:700;text-transform:uppercase;margin-bottom:0}
+.lb-row.me{background:rgba(255,61,135,0.15);border:1px solid rgba(255,61,135,0.3)}
+.rank-badge{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;background:var(--card2)}
+.rank-badge.gold{background:var(--gold);color:#000} .rank-badge.silver{background:#C0C0C0;color:#000} .rank-badge.bronze{background:#CD7F32;color:#fff}
+.lb-score{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;text-align:right}
+.lb-level{color:var(--muted);text-align:right;font-size:0.8rem}
+.lb-empty, .lb-err{text-align:center;padding:30px;color:var(--muted)} .lb-err{color:var(--red)}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.cmd-item{background:var(--card);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px;font-size:0.85rem}
+.cmd-chip{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.cmd-name{font-weight:700;color:var(--text)} .cmd-desc{color:var(--muted);font-size:0.75rem;margin-top:2px}
+#game-screen{flex-direction:column;background:transparent;position:fixed;inset:0;z-index:5;display:flex}
+.hdr{background:rgba(26,31,46,0.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10}
+.hdr-left{display:flex;align-items:center;gap:16px}
+.level-pill{background:var(--card);border:1px solid var(--border-bright);border-radius:8px;padding:4px 12px;font-size:0.8rem;font-weight:700;color:var(--cyan)}
+.player-name{font-weight:700;font-size:0.95rem;color:var(--text)}
+.hdr-center{display:flex;align-items:center;gap:20px}
+.stat-box{display:flex;align-items:center;gap:6px;background:var(--card);border-radius:8px;padding:4px 12px}
+.stat-box .label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.stat-box .val{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--text)}
+.stat-box .val.gold{color:var(--gold)} .stat-box .val.danger{color:var(--red);animation:blink-red 1s infinite}
+@keyframes blink-red{50%{opacity:.5}}
+.hdr-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 14px;color:var(--muted);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .2s}
+.hdr-btn:hover{border-color:var(--border-bright);color:var(--text)}
+.level-progress{display:flex;align-items:center;gap:4px;padding:8px 16px;border-bottom:1px solid var(--border);background:rgba(26,31,46,0.85);backdrop-filter:blur(8px);flex-shrink:0;z-index:10}
+.lp-dot{width:20px;height:6px;border-radius:3px;background:var(--card);transition:background .3s,width .3s;flex-shrink:0}
+.lp-dot.done{background:var(--green)} .lp-dot.current{background:var(--pink);width:28px}
+.lp-sep{flex:1}
+.game-body{display:flex;flex:1;overflow:hidden;gap:0;z-index:10}
+.left-panel{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;min-width:0;flex-direction:column;gap:20px}
+.objective{font-size:0.9rem;color:var(--muted);text-align:center;max-width:480px;line-height:1.6;background:rgba(26,31,46,0.8);padding:10px 20px;border-radius:12px;backdrop-filter:blur(4px);z-index:10}
+.objective strong{color:var(--text)}
+.grid-scene{width:100%;display:flex;justify-content:center;z-index:10}
+.grid-wrap{display:grid;position:relative;background:var(--surface);border:4px solid var(--border-bright);border-radius:12px;overflow:hidden;width:fit-content;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.cell{width:var(--cs);height:var(--cs);border:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;position:relative}
+.cell-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+.cell.wall .cell-inner{background:#3D4559;border-radius:4px;margin:2px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.06)}
+.cell.fragile .cell-inner{background:rgba(180,120,60,0.25);border:1px solid rgba(180,120,60,0.4);border-radius:4px;margin:2px}
+.cell.fragile .cell-inner::after{content:"🟫";font-size:calc(var(--cs)*0.6)}
+.cell.pit .cell-inner{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:4px;margin:2px}
+.cell.pit .cell-inner::after{content:"🕳️";font-size:calc(var(--cs)*0.6)}
+.cell.star .cell-inner::after{content:"⭐";font-size:calc(var(--cs)*0.7);animation:star-pulse 2s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(255,176,32,0.6))}
+@keyframes star-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.robot-wrapper{position:absolute;top:0;left:0;width:var(--cs);height:var(--cs);display:flex;align-items:center;justify-content:center;transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);z-index:10}
+.robot-inner{font-size:calc(var(--cs)*0.75);transition:transform 0.2s ease;display:flex;align-items:center;justify-content:center}
+.robot-wrapper.jumping .robot-inner{animation:jump-anim 0.3s ease-in-out}
+@keyframes jump-anim{0%,100%{transform:scale(1) translateY(0) rotate(var(--rot))}50%{transform:scale(1.3) translateY(-10px) rotate(var(--rot))}}
+.robot-wrapper.falling .robot-inner{animation:fall-anim 0.5s forwards}
+@keyframes fall-anim{100%{transform:scale(0) rotate(360deg);opacity:0}}
+.trail-dot{position:absolute;width:8px;height:8px;background:var(--pink);border-radius:50%;opacity:0;pointer-events:none;z-index:9;animation:trail-fade 0.6s ease-out forwards}
+@keyframes trail-fade{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(0)}}
+.explode-flash{position:absolute;inset:0;background:rgba(255,107,53,0.8);z-index:5;animation:flash-fade 0.3s forwards;border-radius:4px}
+@keyframes flash-fade{to{opacity:0}}
+.right-panel{width:340px;background:rgba(26,31,46,0.95);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;backdrop-filter:blur(10px);z-index:10}
+.rpanel-section{padding:14px 16px;border-bottom:1px solid var(--border)}
+.rpanel-section h3, .program-wrap h3{font-size:0.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.palette-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.blk{padding:8px 12px;border-radius:8px;font-size:0.8rem;font-weight:700;cursor:grab;display:flex;align-items:center;gap:5px;user-select:none;transition:transform .15s,box-shadow .15s;border:none;color:#fff;position:relative;overflow:hidden}
+.blk:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.blk:active{cursor:grabbing;transform:scale(0.97)}
+.blk.active::before{content:"";position:absolute;inset:0;background:rgba(255,255,255,0.3);z-index:1} 
+.blk-fwd{background:var(--blk-fwd)} .blk-turn{background:var(--blk-turn)} .blk-jump{background:var(--blk-jump)} .blk-destroy{background:var(--blk-destroy)}
+.program-wrap{flex:1;display:flex;flex-direction:column;padding:14px 16px;overflow:hidden;min-height:0}
+.program-wrap h3{margin-bottom:8px;flex-shrink:0}
+.dropzone{flex:1;border:1.5px dashed rgba(255,61,135,0.3);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;background:rgba(255,61,135,0.03);min-height:0;transition:border-color .2s,background .2s}
+.dropzone.drag-over{border-color:var(--pink);background:rgba(255,61,135,0.08)}
+.dropzone-hint{color:var(--muted);font-size:0.82rem;text-align:center;padding:20px 10px;line-height:1.6}
+.blk.in-prog{cursor:pointer;width:100%;border-radius:6px;justify-content:space-between;padding:10px 14px;font-size:0.85rem;flex-shrink:0;animation:slide-in .15s ease-out;border-left:5px solid rgba(0,0,0,0.2)}
+@keyframes slide-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.blk.in-prog:hover::after{content:"✕";font-size:0.85rem;opacity:0.8;position:relative;z-index:2}
+.blk.in-prog.removing{animation:slide-out .15s ease-in forwards}
+@keyframes slide-out{to{opacity:0;transform:translateX(20px)}}
+.counter-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--border);margin-top:4px;flex-shrink:0;font-size:0.8rem;color:var(--muted)}
+.counter-row span.cnt{font-family:'JetBrains Mono',monospace;color:var(--text);font-weight:700}
+.run-bar{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.run-btn{flex:1;padding:12px;border-radius:10px;border:none;font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;color:var(--text)}
+.run-btn.run{background:var(--pink);color:#fff}
+.run-btn.run:hover:not(:disabled){background:#e0356f;transform:scale(1.02)}
+.run-btn.reset{background:var(--card);border:1px solid var(--border)}
+.run-btn.reset:hover:not(:disabled){background:var(--card2);border-color:var(--border-bright)}
+.run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.ov-card{border-radius:20px;padding:36px;text-align:center;width:360px;border:1px solid var(--border-bright);animation:ov-in .25s ease-out;background:var(--surface)}
+@keyframes ov-in{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none;scale:1}}
+.ov-card.success{border-color:rgba(0,230,118,0.3)} .ov-card.end{border-color:rgba(255,176,32,0.4)}
+.ov-icon{font-size:3.5rem;margin-bottom:12px;display:block}
+.ov-title{font-size:1.6rem;font-weight:700;margin-bottom:8px}
+.ov-title.bad{color:var(--red)} .ov-title.good{color:var(--green)} .ov-title.epic{color:var(--gold)}
+.ov-msg{color:var(--muted);font-size:0.9rem;line-height:1.6;margin-bottom:24px}
+.score-breakdown{background:var(--card);border-radius:12px;padding:16px;margin-bottom:20px;text-align:left}
+.sb-row{display:flex;justify-content:space-between;padding:4px 0;font-size:0.88rem}
+.sb-row.total{border-top:1px solid var(--border);margin-top:6px;padding-top:10px;font-weight:700;font-size:0.95rem;color:var(--text)}
+.sb-row .label{color:var(--muted)} .sb-row .val{font-family:'JetBrains Mono',monospace;color:var(--gold)} .sb-row.total .val{color:var(--green)}
+.ov-btns{display:flex;gap:10px;justify-content:center}
+.ov-btn{padding:11px 22px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.ov-btn:hover{background:var(--card2);border-color:var(--border-bright)}
+.ov-btn.primary{background:var(--pink);border-color:var(--pink);color:#fff} .ov-btn.primary:hover{background:#e0356f}
+.ov-btn.gold{background:var(--gold);border-color:var(--gold);color:#000} .ov-btn.gold:hover{background:#e8a01c}
+@media(max-width:768px){
+  .game-body{flex-direction:column}
+  .right-panel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:45vh}
+  .left-panel{padding:12px;gap:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="global-bg" id="starfield"></div>
+
+<div id="menu-screen" class="screen">
+  <div class="logo-area">
+    <div class="elegant-a">A</div>
+    <div class="logo-sub">Coding Puzzle</div>
+    <div class="logo-badge">10 LEVELS</div>
+  </div>
+  <div class="menu-card">
+    <button class="menu-btn primary" onclick="showScreen('name-input-screen')"><span class="icon">🚀</span> Start Game</button>
+    <button class="menu-btn" onclick="showLeaderboard()"><span class="icon">🏆</span> Leaderboard</button>
+    <button class="menu-btn" onclick="showScreen('howto-screen')"><span class="icon">📖</span> How to Play</button>
+  </div>
+</div>
+
+<div id="howto-screen" class="screen hidden">
+  <div class="howto-card">
+    <h2>How to Play</h2>
+    <div class="tip-box"><strong>Objective:</strong> Drag blocks into the Program Area to guide the 🤖 to the star ⭐. The timer starts when you click Run!</div>
+    <div class="cmd-grid">
+      <div class="cmd-item"><div class="cmd-chip" style="background:var(--blk-fwd)">⬆️</div><div class="cmd-info"><div class="cmd-name">Move Forward</div><div class="cmd-desc">Move 1 step forward</div></div></div>
+      <div class="cmd-item"><div class="cmd-chip" style="background:var(--blk-turn)">↺</div><div class="cmd-info"><div class="cmd-name">Turn Left</div><div class="cmd-desc">Rotate to face left</div></div></div>
+      <div class="cmd-item"><div class="cmd-chip" style="background:var(--blk-turn)">↻</div><div class="cmd-info"><div class="cmd-name">Turn Right</div><div class="cmd-desc">Rotate to face right</div></div></div>
+      <div class="cmd-item"><div class="cmd-chip" style="background:var(--blk-jump)">🦘</div><div class="cmd-info"><div class="cmd-name">Jump</div><div class="cmd-desc">Jump over 1 pit forward</div></div></div>
+      <div class="cmd-item" style="grid-column:span 2"><div class="cmd-chip" style="background:var(--blk-destroy)">💥</div><div class="cmd-info"><div class="cmd-name">Destroy</div><div class="cmd-desc">Destroy the fragile block in front of you</div></div></div>
+    </div>
+    <button class="btn primary" style="width:100%" onclick="showScreen('menu-screen')">Got it!</button>
+  </div>
+</div>
+
+<div id="name-input-screen" class="screen hidden">
+  <div class="form-card">
+    <h2>👾 What's your name?</h2>
+    <p>Your name will appear on the leaderboard if you complete the levels.</p>
+    <input class="name-input" id="player-name-input" type="text" maxlength="20" placeholder="Type your name...">
+    <div class="form-btns">
+      <button class="btn primary" onclick="startGame()">Start Adventure 🚀</button>
+      <button class="btn secondary" onclick="showScreen('menu-screen')">Back</button>
+    </div>
+  </div>
+</div>
+
+<div id="leaderboard-screen" class="screen hidden">
+  <div class="lb-card">
+    <h2>🏆 Top 10 Coders</h2>
+    <div class="lb-row header"><span>#</span><span>Name</span><span>Score</span><span>Level</span></div>
+    <div id="lb-body"></div>
+    <button class="btn secondary" style="width:100%;margin-top:16px" onclick="showScreen('menu-screen')">Back to Menu</button>
+  </div>
+</div>
+
+<div id="game-screen" class="screen hidden">
+  <header class="hdr">
+    <div class="hdr-left">
+      <div class="level-pill" id="level-pill">LEVEL 1</div>
+      <div class="player-name" id="player-name-hdr"></div>
+    </div>
+    <div class="hdr-center">
+      <div class="stat-box"><div class="label">Score</div><div class="val gold" id="score-val">0</div></div>
+      <div class="stat-box"><div class="label">Time</div><div class="val" id="timer-val">01:00</div></div>
+    </div>
+    <div class="hdr-right"><button class="hdr-btn" onclick="quitGame()">← Menu</button></div>
+  </header>
+  <div class="level-progress" id="level-progress"></div>
+  <div class="game-body">
+    <div class="left-panel">
+      <div class="objective" id="level-objective"></div>
+      <div class="grid-scene">
+        <div class="grid-wrap" id="grid-wrap">
+          <div class="robot-wrapper" id="robot-wrapper"><div class="robot-inner" id="robot-inner">🤖</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="rpanel-section">
+        <h3>Block Palette</h3>
+        <div class="palette-wrap" id="palette-wrap"></div>
+      </div>
+      <div class="program-wrap">
+        <h3>Program Area</h3>
+        <div class="dropzone" id="dropzone"><div class="dropzone-hint" id="dz-hint">Drag blocks here<br>or click a block in the palette ↑</div></div>
+        <div class="counter-row"><span>Program:</span><span class="cnt" id="step-count">0</span><span>steps</span></div>
+      </div>
+      <div class="run-bar">
+        <button class="run-btn run" id="btn-run" onclick="runProgram()">▶ Run</button>
+        <button class="run-btn reset" id="btn-reset" onclick="resetGameAndBlocks()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ov-fail" class="overlay hidden">
+  <div class="ov-card fail">
+    <span class="ov-icon">😵</span>
+    <div class="ov-title bad" id="fail-title">Failed!</div>
+    <div class="ov-msg" id="fail-msg"></div>
+    <div class="ov-btns">
+      <button class="ov-btn" onclick="resetLevelAttempt()">↺ Try Again</button>
+      <button class="ov-btn primary" onclick="restartGame()">Restart Game</button>
+    </div>
+  </div>
+</div>
+
+<div id="ov-success" class="overlay hidden">
+  <div class="ov-card success">
+    <span class="ov-icon">🎉</span>
+    <div class="ov-title good">Level Cleared!</div>
+    <div class="score-breakdown">
+      <div class="sb-row"><span class="label">Base Score</span><span class="val" id="sb-base">+1000</span></div>
+      <div class="sb-row"><span class="label">Time Bonus</span><span class="val" id="sb-time">+0</span></div>
+      <div class="sb-row"><span class="label">Reset Penalty</span><span class="val" id="sb-pen" style="color:var(--red)">-0</span></div>
+      <div class="sb-row total"><span class="label">Total Gained</span><span class="val" id="sb-total">1000</span></div>
+    </div>
+    <div class="ov-btns"><button class="ov-btn gold" onclick="nextLevel()">Next Level →</button></div>
+  </div>
+</div>
+
+<div id="ov-end" class="overlay hidden">
+  <div class="ov-card end">
+    <span class="ov-icon">🏆</span>
+    <div class="ov-title epic">Game Completed!</div>
+    <div class="ov-msg">You have conquered all challenges!</div>
+    <div class="score-breakdown">
+      <div class="sb-row total"><span class="label">Total Score</span><span class="val" id="end-score">0</span></div>
+    </div>
+    <div class="ov-btns">
+      <button class="ov-btn" onclick="showLeaderboard()">🏆 Leaderboard</button>
+      <button class="ov-btn primary" onclick="restartGame()">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'http://localhost:3000/api/leaderboard';
+
+const ALL_BLOCKS = {
+  FORWARD:    {id:'FORWARD',    label:'⬆️ Move Forward', cls:'blk-fwd'},
+  TURN_LEFT:  {id:'TURN_LEFT',  label:'↺ Turn Left',     cls:'blk-turn'},
+  TURN_RIGHT: {id:'TURN_RIGHT', label:'↻ Turn Right',    cls:'blk-turn'},
+  JUMP:       {id:'JUMP',       label:'🦘 Jump',         cls:'blk-jump'},
+  DESTROY:    {id:'DESTROY',    label:'💥 Destroy',      cls:'blk-destroy'}
+};
+
+const RAW_LEVELS = [
+  { id:1, time:60, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT'], obj:'Move forward and turn to reach the star.',
+    map:[ "######", "###.*#", "###^##", "######" ] },
+
+  { id:2, time:60, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT'], obj:'Turn to align with the star, then move forward.',
+    map:[ "######", "###*##", "###.##", "#...##", "#^####", "######" ] },
+
+  { id:3, time:60, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT'], obj:'Navigate the turns to reach the target.',
+    map:[ "#######", "#####*#", "#####.#", "###...#", "###.###", "#...###", "#^#####", "#######" ] }, 
+
+  { id:4, time:60, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT','DESTROY'], obj:'Destroy the fragile block in front of you.',
+    map:[ "#####", "##*##", "##.##", "##X##", "##.##", "##^##", "#####" ] },
+
+  { id:5, time:70, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT','JUMP'], obj:'Align yourself properly before jumping over the pit.',
+    map:[ "#####", "##*##", "##.##", "##O##", "##.##", "##^##", "#####" ] },
+
+  { id:6, time:80, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT','JUMP','DESTROY'], obj:'Break the box, then prepare for a jump.',
+    map:[ "######", "###*##", "###.##", "###O##", "###.##", "###X##", "#>..##", "######" ] },
+
+  { id:7, time:90, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT','JUMP','DESTROY'], obj:'Carefully navigate the spiral obstacles by turning.',
+    map:[ "#######", "#*....#", "#O###.#", "#.###.#", "#.X...#", "#.#####", "#^#####", "#######" ] },
+
+  { id:8, time:100, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT','JUMP','DESTROY'], obj:'Walk past the obstacle to face it correctly.',
+    map:[ "########", "#*...###", "####.###", "####X###", "####.###", "##...###", "##.#####", "##O#####", "##.#####", "##^#####", "########" ] },
+
+  { id:9, time:110, blocks:['FORWARD','TURN_LEFT','TURN_RIGHT','JUMP','DESTROY'], obj:'Every turn and action matters in this maze.',
+    map:[ "########", "#*..####", "###.####", "###O####", "###.####", "#...X..#", "#.####.#", "#^####.#", "########" ] },
+
+  { id:10, time:120, blocks:Object.keys(ALL_BLOCKS), obj:'The ultimate test of logic and orientation.',
+    map:[ "#########", "#...#...#", "#.#.#.#.#", "#.#X#O#.#", "#.#.#.#.#", "#^#...#*#", "#########" ] }
+];
+
+const LEVELS = RAW_LEVELS.map(lv => {
+  const R = lv.map.length, C = lv.map[0].length;
+  let start = {r:0,c:0}, startDir = {r:-1,c:0}, startDeg = 0, star = {r:0,c:0};
+  let walls = [], fragile = [], pits = [];
+  for(let r=0; r<R; r++){
+    for(let c=0; c<C; c++){
+      let char = lv.map[r][c];
+      if(char==='#') walls.push({r,c});
+      else if(char==='X') fragile.push({r,c});
+      else if(char==='O') pits.push({r,c});
+      else if(char==='*') star = {r,c};
+      else if(char==='^') { start = {r,c}; startDir={r:-1,c:0}; startDeg=0; }
+      else if(char==='>') { start = {r,c}; startDir={r:0,c:1}; startDeg=90; }
+      else if(char==='v') { start = {r,c}; startDir={r:1,c:0}; startDeg=180; }
+      else if(char==='<') { start = {r,c}; startDir={r:0,c:-1}; startDeg=-90; }
+    }
+  }
+  return { ...lv, rows:R, cols:C, start, startDir, startDeg, star, walls, fragile, pits };
+});
+
+let playerName = '';
+let totalScore = 0;
+let lvlIdx = 0;
+let timerInt = null;
+let timeLeft = 0;
+let isRunning = false;
+let levelTries = 0;
+let robotPos = {r:0,c:0};
+let robotDir = {r:-1,c:0};
+let robotDeg = 0; 
+let gridState = [];
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function hideOverlays() { document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden')); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function buildStarfield() {
+  const sf = document.getElementById('starfield');
+  for(let i=0;i<80;i++) {
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
+    s.style.setProperty('--d', (2+Math.random()*4)+'s'); s.style.setProperty('--delay', (Math.random()*4)+'s');
+    sf.appendChild(s);
+  }
+}
+buildStarfield();
+
+document.getElementById('player-name-input').addEventListener('keydown', e => { if(e.key === 'Enter') startGame(); });
+
+function startGame() {
+  const n = document.getElementById('player-name-input').value.trim();
+  if(!n) { alert('Please enter your name first!'); return; }
+  playerName = n; totalScore = 0; lvlIdx = 0;
+  showScreen('game-screen');
+  loadLevel();
+}
+
+function restartGame() { hideOverlays(); totalScore = 0; lvlIdx = 0; loadLevel(); }
+function quitGame() { stopTimer(); isRunning = false; showScreen('menu-screen'); }
+
+function loadLevel() {
+  hideOverlays(); 
+  const lv = LEVELS[lvlIdx];
+  levelTries = 0; timeLeft = lv.time; isRunning = false;
+
+  document.getElementById('level-pill').textContent = 'LEVEL ' + lv.id + ' / 10';
+  document.getElementById('player-name-hdr').textContent = playerName;
+  document.getElementById('level-objective').innerHTML = '<strong>Mission:</strong> ' + lv.obj;
+  updateScoreDisplay(); buildLevelProgress();
+
+  document.getElementById('dropzone').innerHTML = '<div class="dropzone-hint" id="dz-hint">Drag blocks here<br>or click a block in the palette ↑</div>';
+  updateStepCount(); buildPalette(lv.blocks); initGrid(); setRunBtnState(false);
+  document.getElementById('robot-wrapper').className = 'robot-wrapper'; 
+  
+  startTimer();
+}
+
+function buildLevelProgress() {
+  const el = document.getElementById('level-progress'); el.innerHTML = '';
+  LEVELS.forEach((lv, i) => {
+    const d = document.createElement('div');
+    d.className = 'lp-dot' + (i < lvlIdx ? ' done' : i === lvlIdx ? ' current' : '');
+    el.appendChild(d);
+    if(i < LEVELS.length - 1) el.appendChild(Object.assign(document.createElement('div'), {className:'lp-sep'}));
+  });
+}
+
+function buildPalette(blockIds) {
+  const pw = document.getElementById('palette-wrap'); pw.innerHTML = '';
+  blockIds.forEach(cmd => {
+    const b = ALL_BLOCKS[cmd];
+    const el = document.createElement('div');
+    el.className = 'blk ' + b.cls; el.draggable = true; el.dataset.cmd = cmd; el.textContent = b.label;
+    el.ondragstart = onDragStart; el.onclick = () => addBlock(cmd);
+    pw.appendChild(el);
+  });
+}
+
+function resetLevelAttempt() {
+  if(isRunning) return;
+  levelTries++; hideOverlays(); isRunning = false;
+  timeLeft = LEVELS[lvlIdx].time; 
+  initGrid(); setRunBtnState(false);
+  document.getElementById('robot-wrapper').className = 'robot-wrapper';
+  startTimer();
+}
+
+function resetGameAndBlocks() {
+  if(isRunning) return;
+  document.getElementById('dropzone').innerHTML = '<div class="dropzone-hint" id="dz-hint">Drag blocks here<br>or click a block in the palette ↑</div>';
+  updateStepCount();
+  resetLevelAttempt();
+}
+
+function nextLevel() {
+  lvlIdx++;
+  if(lvlIdx >= LEVELS.length) endGame(); else loadLevel();
+}
+
+function startTimer() {
+  stopTimer(); 
+  updateTimerDisplay(); 
+  timerInt = setInterval(() => {
+    timeLeft--; updateTimerDisplay();
+    if(timeLeft <= 0) { 
+      stopTimer(); isRunning = false; setRunBtnState(false); 
+      showFail('Time\'s Up!', 'You ran out of time before reaching the star.'); 
+    }
+  }, 1000);
+}
+
+function stopTimer() { if(timerInt) clearInterval(timerInt); timerInt = null; }
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-val');
+  el.textContent = Math.floor(timeLeft/60).toString().padStart(2,'0')+':'+(timeLeft%60).toString().padStart(2,'0');
+  if(timeLeft <= 10 && timeLeft > 0) el.classList.add('danger'); else el.classList.remove('danger');
+}
+function updateScoreDisplay() { document.getElementById('score-val').textContent = totalScore.toLocaleString('en-US'); }
+
+function initGrid() {
+  const lv = LEVELS[lvlIdx];
+  robotPos = {...lv.start};
+  robotDir = {...lv.startDir}; 
+  robotDeg = lv.startDeg;
+  
+  gridState = Array.from({length:lv.rows}, () => Array(lv.cols).fill(0));
+  lv.walls.forEach(w => gridState[w.r][w.c] = 1);
+  lv.fragile.forEach(f => gridState[f.r][f.c] = 2);
+  lv.pits.forEach(p => gridState[p.r][p.c] = 3);
+  gridState[lv.star.r][lv.star.c] = 4;
+
+  renderGrid();
+  positionRobot(false);
+}
+
+function renderGrid() {
+  const lv = LEVELS[lvlIdx];
+  const wrap = document.getElementById('grid-wrap');
+  Array.from(wrap.children).forEach(c => { if(c.id !== 'robot-wrapper') c.remove(); });
+
+  const maxW = Math.min(window.innerWidth - 40, 440);
+  let cs = Math.floor(maxW / lv.cols);
+  if(cs > 60) cs = 60; 
+  document.documentElement.style.setProperty('--cs', `${cs}px`);
+
+  wrap.style.gridTemplateColumns = `repeat(${lv.cols}, var(--cs))`;
+  wrap.style.gridTemplateRows = `repeat(${lv.rows}, var(--cs))`;
+
+  for(let r=0;r<lv.rows;r++) {
+    for(let c=0;c<lv.cols;c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell'; cell.id = `c${r}x${c}`;
+      const inner = document.createElement('div'); inner.className = 'cell-inner';
+      const v = gridState[r][c];
+      if(v===1) cell.classList.add('wall'); else if(v===2) cell.classList.add('fragile');
+      else if(v===3) cell.classList.add('pit'); else if(v===4) cell.classList.add('star');
+      cell.appendChild(inner); wrap.appendChild(cell);
+    }
+  }
+}
+
+function positionRobot(animate) {
+  const robot = document.getElementById('robot-wrapper');
+  const inner = document.getElementById('robot-inner');
+  if(!animate) robot.style.transition = 'none';
+  else robot.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+  robot.style.transform = `translate(calc(${robotPos.c} * var(--cs)), calc(${robotPos.r} * var(--cs)))`;
+  inner.style.setProperty('--rot', `${robotDeg}deg`);
+  inner.style.transform = `rotate(${robotDeg}deg)`;
+  if(!animate) void robot.offsetWidth;
+}
+
+function spawnTrail(r, c) {
+  const cell = document.getElementById(`c${r}x${c}`);
+  if(cell) {
+    const dot = document.createElement('div'); dot.className = 'trail-dot';
+    cell.appendChild(dot);
+    setTimeout(() => dot.remove(), 600);
+  }
+}
+
+window.addEventListener('resize', () => {
+  if(!document.getElementById('game-screen').classList.contains('hidden') && !isRunning) {
+    renderGrid(); positionRobot(false);
+  }
+});
+
+let dragCmd = null;
+function onDragStart(e) { if(isRunning) { e.preventDefault(); return; } dragCmd = e.currentTarget.dataset.cmd; e.dataTransfer.effectAllowed = 'copy'; }
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  if(!isRunning && dragCmd) addBlock(dragCmd);
+  dragCmd = null;
+});
+
+function addBlock(cmd) {
+  if(isRunning) return;
+  const hint = document.getElementById('dz-hint'); if(hint) hint.remove();
+  const b = ALL_BLOCKS[cmd];
+  const el = document.createElement('div');
+  el.className = 'blk in-prog ' + b.cls; el.dataset.cmd = cmd;
+  el.innerHTML = b.label;
+  el.onclick = () => { if(!isRunning) removeBlock(el); };
+  dz.appendChild(el); updateStepCount();
+}
+function removeBlock(el) { el.classList.add('removing'); setTimeout(() => { el.remove(); updateStepCount(); }, 150); }
+function updateStepCount() { document.getElementById('step-count').textContent = document.querySelectorAll('#dropzone .in-prog').length; }
+
+function setRunBtnState(running) {
+  document.getElementById('btn-run').disabled = running; document.getElementById('btn-reset').disabled = running;
+}
+
+async function runProgram() {
+  if(isRunning) return;
+  const blocksDOM = Array.from(document.querySelectorAll('#dropzone .in-prog'));
+  if(blocksDOM.length === 0) { alert('Please organize the program sequence first!'); return; }
+
+  isRunning = true; setRunBtnState(true); initGrid();
+  document.getElementById('robot-wrapper').className = 'robot-wrapper';
+
+  const queue = [];
+  for(let i=0; i<blocksDOM.length; i++) {
+    queue.push({ cmd: blocksDOM[i].dataset.cmd, el: blocksDOM[i] });
+  }
+
+  for(const step of queue) {
+    if(!isRunning) break;
+    document.querySelectorAll('#dropzone .blk').forEach(b => b.classList.remove('active'));
+    step.el.classList.add('active');
+    
+    spawnTrail(robotPos.r, robotPos.c);
+    const ok = await execStep(step.cmd);
+    
+    if(!ok) { isRunning = false; setRunBtnState(false); return; }
+    if(gridState[robotPos.r][robotPos.c] === 4) {
+      isRunning = false; setRunBtnState(false); handleWin(); return;
+    }
+    await sleep(400); 
+  }
+
+  if(isRunning) {
+    isRunning = false; setRunBtnState(false);
+    document.querySelectorAll('#dropzone .blk').forEach(b => b.classList.remove('active'));
+    showFail('Not Enough Steps', 'The program ended but the robot has not reached the star ⭐.');
+  }
+}
+
+async function execStep(cmd) {
+  const lv = LEVELS[lvlIdx];
+  const robotWrap = document.getElementById('robot-wrapper');
+  let nr = robotPos.r, nc = robotPos.c;
+
+  if (cmd === 'FORWARD') {
+    nr += robotDir.r;
+    nc += robotDir.c;
+  } 
+  else if (cmd === 'TURN_LEFT') {
+    robotDeg -= 90;
+    let temp = robotDir.r;
+    robotDir.r = -robotDir.c;
+    robotDir.c = temp;
+    positionRobot(true);
+    return true;
+  } 
+  else if (cmd === 'TURN_RIGHT') {
+    robotDeg += 90;
+    let temp = robotDir.r;
+    robotDir.r = robotDir.c;
+    robotDir.c = -temp;
+    positionRobot(true);
+    return true;
+  } 
+  else if (cmd === 'JUMP') {
+    nr += robotDir.r * 2;
+    nc += robotDir.c * 2;
+    robotWrap.classList.add('jumping');
+    setTimeout(() => robotWrap.classList.remove('jumping'), 300);
+  } 
+  else if (cmd === 'DESTROY') {
+    const tr = robotPos.r + robotDir.r; 
+    const tc = robotPos.c + robotDir.c;
+    if(tr>=0 && tr<lv.rows && tc>=0 && tc<lv.cols && gridState[tr][tc] === 2) {
+      gridState[tr][tc] = 0;
+      const cellEl = document.getElementById(`c${tr}x${tc}`);
+      if(cellEl) {
+        cellEl.classList.remove('fragile');
+        const flash = document.createElement('div'); flash.className = 'explode-flash';
+        cellEl.querySelector('.cell-inner').appendChild(flash);
+        setTimeout(() => flash.remove(), 300);
+      }
+    }
+    return true; 
+  }
+
+  if(nr<0 || nr>=lv.rows || nc<0 || nc>=lv.cols) {
+    showFail('Out of Bounds!', 'Ouch! The robot hit the edge of the map.'); return false;
+  }
+
+  const cell = gridState[nr][nc];
+  if(cell===1) { showFail('Hit a Wall!', 'Crash! The robot hit a solid wall.'); return false; }
+  if(cell===2) { showFail('Blocked!', 'The robot hit a wooden block. Use the 💥 Destroy block first.'); return false; }
+
+  robotPos.r = nr; robotPos.c = nc;
+  positionRobot(true);
+  await sleep(100);
+
+  if(cell===3) {
+    robotWrap.classList.add('falling');
+    await sleep(500);
+    showFail('Fell into Pit!', 'Ahhhh! The robot fell. Try using the 🦘 Jump block to cross it.'); return false;
+  }
+
+  return true; 
+}
+
+function showFail(title, msg) {
+  stopTimer(); 
+  document.getElementById('fail-title').textContent = title; document.getElementById('fail-msg').textContent = msg;
+  document.getElementById('ov-fail').classList.remove('hidden');
+}
+
+function handleWin() {
+  stopTimer(); 
+  document.querySelectorAll('#dropzone .blk').forEach(b => b.classList.remove('active'));
+  const base = 1000, timeBonus = timeLeft * 10, penalty = levelTries * 100;
+  const gained = Math.max(100, base + timeBonus - penalty);
+  totalScore += gained; updateScoreDisplay();
+
+  document.getElementById('sb-base').textContent = '+' + base;
+  document.getElementById('sb-time').textContent = '+' + timeBonus;
+  document.getElementById('sb-pen').textContent = '-' + penalty;
+  document.getElementById('sb-total').textContent = gained;
+  document.getElementById('ov-success').classList.remove('hidden');
+}
+
+function endGame() {
+  stopTimer();
+  document.getElementById('end-score').textContent = totalScore.toLocaleString('en-US');
+  document.getElementById('ov-end').classList.remove('hidden');
+  saveScore(playerName, totalScore, LEVELS.length);
+}
+
+async function showLeaderboard() {
+  showScreen('leaderboard-screen'); hideOverlays();
+  const body = document.getElementById('lb-body'); body.innerHTML = '<div class="lb-empty">Loading data...</div>';
+  try {
+    const res = await fetch(API_URL); if(!res.ok) throw new Error();
+    const data = await res.json(); body.innerHTML = '';
+    if(!data.length) body.innerHTML = '<div class="lb-empty">No leaderboard data yet.</div>';
+    else {
+      data.slice(0,10).forEach((e, i) => {
+        const isMe = e.player_name === playerName && e.score === totalScore;
+        const row = document.createElement('div'); row.className = 'lb-row data' + (isMe ? ' me' : '');
+        const rankCls = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+        row.innerHTML = `<span class="rank-badge ${rankCls}">${i+1}</span><span>${e.player_name}</span><span class="lb-score">${e.score.toLocaleString('en-US')}</span><span class="lb-level">Lv ${e.level_reached}</span>`;
+        body.appendChild(row);
+      });
+    }
+  } catch(_) { body.innerHTML = '<div class="lb-err">Failed to load API Leaderboard.<br>Make sure backend is running (port 3000).</div>'; }
+}
+
+async function saveScore(name, score, level) {
+  try { await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({playerName:name, score, levelReached:level}) }); } catch(_) {}
+}
+</script>
+</body>
+</html>
