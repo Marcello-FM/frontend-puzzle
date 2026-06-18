@@ -713,7 +713,7 @@ async function showLeaderboard() {
     const data = await res.json(); body.innerHTML = '';
     if(!data.length) body.innerHTML = '<div class="lb-empty">No leaderboard data yet.</div>';
     else {
-      data.slice(0,10).forEach((e, i) => {
+      data.forEach((e, i) => {
         const isMe = e.player_name === playerName && e.score === totalScore;
         const row = document.createElement('div'); row.className = 'lb-row data' + (isMe ? ' me' : '');
         const rankCls = i===0?'gold':i===1?'silver':i===2?'bronze':'';
