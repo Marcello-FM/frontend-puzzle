@@ -152,10 +152,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden}
 .ov-btn:hover{background:var(--card2);border-color:var(--border-bright)}
 .ov-btn.primary{background:var(--pink);border-color:var(--pink);color:#fff} .ov-btn.primary:hover{background:#e0356f}
 .ov-btn.gold{background:var(--gold);border-color:var(--gold);color:#000} .ov-btn.gold:hover{background:#e8a01c}
+
+/* PENYESUAIAN KHUSUS UNTUK HP / LAYAR KECIL */
 @media(max-width:768px){
-  .game-body{flex-direction:column}
-  .right-panel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:45vh}
-  .left-panel{padding:12px;gap:10px}
+  html, body { height: auto; min-height: 100%; overflow-y: auto; overflow-x: hidden; }
+  .screen { position: absolute; min-height: 100vh; height: auto; }
+  .game-body { flex-direction: column; overflow: visible; }
+  .left-panel { padding: 15px 10px; flex: none; height: auto; }
+  .right-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); flex: none; height: auto; padding-bottom: 30px; }
+  .program-wrap { min-height: 250px; }
+  .dropzone-hint { font-size: 0.8rem; }
+  .player-name { display: none; }
+  .stat-box .label { display: none; }
+  .stat-box .val { font-size: 0.9rem; }
 }
 </style>
 </head>
@@ -179,7 +188,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden}
 <div id="howto-screen" class="screen hidden">
   <div class="howto-card">
     <h2>How to Play</h2>
-    <div class="tip-box"><strong>Objective:</strong> Drag blocks into the Program Area to guide the 🤖 to the star ⭐. The timer starts when you click Run!</div>
+    <div class="tip-box"><strong>Objective:</strong> Tap blocks to add them to the Program Area to guide the 🤖 to the star ⭐. The timer starts when you click Run!</div>
     <div class="cmd-grid">
       <div class="cmd-item"><div class="cmd-chip" style="background:var(--blk-fwd)">⬆️</div><div class="cmd-info"><div class="cmd-name">Move Forward</div><div class="cmd-desc">Move 1 step forward</div></div></div>
       <div class="cmd-item"><div class="cmd-chip" style="background:var(--blk-turn)">↺</div><div class="cmd-info"><div class="cmd-name">Turn Left</div><div class="cmd-desc">Rotate to face left</div></div></div>
@@ -241,7 +250,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden}
       </div>
       <div class="program-wrap">
         <h3>Program Area</h3>
-        <div class="dropzone" id="dropzone"><div class="dropzone-hint" id="dz-hint">Drag blocks here<br>or click a block in the palette ↑</div></div>
+        <div class="dropzone" id="dropzone"><div class="dropzone-hint" id="dz-hint">Tap blocks in the palette ↑<br>to build your program</div></div>
         <div class="counter-row"><span>Program:</span><span class="cnt" id="step-count">0</span><span>steps</span></div>
       </div>
       <div class="run-bar">
@@ -409,7 +418,7 @@ function loadLevel() {
   document.getElementById('level-objective').innerHTML = '<strong>Mission:</strong> ' + lv.obj;
   updateScoreDisplay(); buildLevelProgress();
 
-  document.getElementById('dropzone').innerHTML = '<div class="dropzone-hint" id="dz-hint">Drag blocks here<br>or click a block in the palette ↑</div>';
+  document.getElementById('dropzone').innerHTML = '<div class="dropzone-hint" id="dz-hint">Tap blocks in the palette ↑<br>to build your program</div>';
   updateStepCount(); buildPalette(lv.blocks); initGrid(); setRunBtnState(false);
   document.getElementById('robot-wrapper').className = 'robot-wrapper'; 
   
@@ -448,7 +457,7 @@ function resetLevelAttempt() {
 
 function resetGameAndBlocks() {
   if(isRunning) return;
-  document.getElementById('dropzone').innerHTML = '<div class="dropzone-hint" id="dz-hint">Drag blocks here<br>or click a block in the palette ↑</div>';
+  document.getElementById('dropzone').innerHTML = '<div class="dropzone-hint" id="dz-hint">Tap blocks in the palette ↑<br>to build your program</div>';
   updateStepCount();
   resetLevelAttempt();
 }
