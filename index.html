@@ -153,14 +153,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden}
 .ov-btn.primary{background:var(--pink);border-color:var(--pink);color:#fff} .ov-btn.primary:hover{background:#e0356f}
 .ov-btn.gold{background:var(--gold);border-color:var(--gold);color:#000} .ov-btn.gold:hover{background:#e8a01c}
 
-/* PENYESUAIAN KHUSUS UNTUK HP / LAYAR KECIL */
 @media(max-width:768px){
-  html, body { height: auto; min-height: 100%; overflow-y: auto; overflow-x: hidden; }
-  .screen { position: absolute; min-height: 100vh; height: auto; }
-  .game-body { flex-direction: column; overflow: visible; }
+  html, body { height: auto; min-height: 100%; overflow-y: auto !important; overflow-x: hidden; position: relative; }
+  .screen, #game-screen { position: relative !important; min-height: 100vh; height: auto !important; overflow: visible !important; display: flex; flex-direction: column; }
+  .game-body { flex-direction: column; overflow: visible !important; height: auto !important; display: flex; flex: none; }
   .left-panel { padding: 15px 10px; flex: none; height: auto; }
-  .right-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); flex: none; height: auto; padding-bottom: 30px; }
-  .program-wrap { min-height: 250px; }
+  .right-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); flex: none; height: auto; padding-bottom: 40px; }
+  .program-wrap { min-height: 250px; flex: none; height: auto; }
   .dropzone-hint { font-size: 0.8rem; }
   .player-name { display: none; }
   .stat-box .label { display: none; }
