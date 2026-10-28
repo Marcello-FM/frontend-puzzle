@@ -211,6 +211,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden}
   </div>
 </div>
 
+<div id="password-screen" class="screen hidden">
+  <div class="form-card">
+    <h2>🔐 Admin Access</h2>
+    <p>Enter password to view the leaderboard.</p>
+    <input class="name-input" id="password-input" type="password" maxlength="30" placeholder="Enter password...">
+    <div id="password-error" style="color:var(--red);font-size:0.85rem;margin-bottom:12px;display:none;text-align:center"></div>
+    <div class="form-btns">
+      <button class="btn primary" onclick="verifyPassword()">Access Leaderboard</button>
+      <button class="btn secondary" onclick="showScreen('menu-screen')">Back</button>
+    </div>
+  </div>
+</div>
+
 <div id="leaderboard-screen" class="screen hidden">
   <div class="lb-card">
     <h2>🏆 Leaderboard</h2>
@@ -395,6 +408,7 @@ function buildStarfield() {
 buildStarfield();
 
 document.getElementById('player-name-input').addEventListener('keydown', e => { if(e.key === 'Enter') startGame(); });
+document.getElementById('password-input').addEventListener('keydown', e => { if(e.key === 'Enter') verifyPassword(); });
 
 function startGame() {
   const n = document.getElementById('player-name-input').value.trim();
@@ -714,22 +728,71 @@ function endGame() {
 }
 
 async function showLeaderboard() {
-  showScreen('leaderboard-screen'); hideOverlays();
-  const body = document.getElementById('lb-body'); body.innerHTML = '<div class="lb-empty">Loading data...</div>';
+  showScreen('password-screen');
+  document.getElementById('password-input').value = '';
+  document.getElementById('password-error').style.display = 'none';
+  document.getElementById('password-input').focus();
+}
+
+async function verifyPassword() {
+  const password = document.getElementById('password-input').value;
+  if (!password) {
+    showPasswordError('Please enter a password');
+    return;
+  }
+
   try {
-    const res = await fetch(API_URL); if(!res.ok) throw new Error();
-    const data = await res.json(); body.innerHTML = '';
-    if(!data.length) body.innerHTML = '<div class="lb-empty">No leaderboard data yet.</div>';
-    else {
+    const res = await fetch(`${API_URL.replace('/leaderboard', '')}/leaderboard/verify-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+
+    if (res.ok) {
+      // Password correct, load leaderboard
+      loadLeaderboardData(password);
+    } else {
+      showPasswordError('Incorrect password. Try again.');
+    }
+  } catch (err) {
+    console.error('Password verification error:', err);
+    showPasswordError('Connection error. Please try again.');
+  }
+}
+
+function showPasswordError(msg) {
+  const errEl = document.getElementById('password-error');
+  errEl.textContent = msg;
+  errEl.style.display = 'block';
+}
+
+async function loadLeaderboardData(password) {
+  showScreen('leaderboard-screen');
+  const body = document.getElementById('lb-body');
+  body.innerHTML = '<div class="lb-empty">Loading data...</div>';
+
+  try {
+    const res = await fetch(`${API_URL}?password=${encodeURIComponent(password)}`);
+    if (!res.ok) throw new Error('Failed to load leaderboard');
+    
+    const data = await res.json();
+    body.innerHTML = '';
+    if (!data.length) {
+      body.innerHTML = '<div class="lb-empty">No leaderboard data yet.</div>';
+    } else {
       data.forEach((e, i) => {
         const isMe = e.player_name === playerName && e.score === totalScore;
-        const row = document.createElement('div'); row.className = 'lb-row data' + (isMe ? ' me' : '');
-        const rankCls = i===0?'gold':i===1?'silver':i===2?'bronze':'';
-        row.innerHTML = `<span class="rank-badge ${rankCls}">${i+1}</span><span>${e.player_name}</span><span class="lb-score">${e.score.toLocaleString('en-US')}</span><span class="lb-level">Lv ${e.level_reached}</span>`;
+        const row = document.createElement('div');
+        row.className = 'lb-row data' + (isMe ? ' me' : '');
+        const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        row.innerHTML = `<span class="rank-badge ${rankCls}">${i + 1}</span><span>${e.player_name}</span><span class="lb-score">${e.score.toLocaleString('en-US')}</span><span class="lb-level">Lv ${e.level_reached}</span>`;
         body.appendChild(row);
       });
     }
-  } catch(_) { body.innerHTML = '<div class="lb-err">Failed to load API Leaderboard.<br>Make sure backend is running (port 3000).</div>'; }
+  } catch (err) {
+    console.error('Load leaderboard error:', err);
+    body.innerHTML = '<div class="lb-err">Failed to load leaderboard.<br>Please check your password and try again.</div>';
+  }
 }
 
 async function saveScore(name, score, level) {
